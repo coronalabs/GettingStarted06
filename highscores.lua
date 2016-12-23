@@ -11,38 +11,37 @@ local scene = composer.newScene()
 -- initialize variables
 local json = require( "json" )
 
-local WIDTH = display.contentWidth
-local HEIGHT = display.contentHeight
-local CENTERX = display.contentCenterX
-local CENTERY = display.contentCenterY
+local scoresTable = {}
 
-local scoresTable = {} 	
-local base = system.DocumentsDirectory
-local path = system.pathForFile( "scores", base )
+local filePath = system.pathForFile( "scores.json", system.DocumentsDirectory )
 
-local function loadScores() 
-	local file = io.open( path, "r" )
-	
-	if file then
-		local contents = file:read( "*a" )
-		io.close( file )
-		scoresTable = json.decode( contents )
-	end
-	if scoresTable == nil then
-		scoresTable = {0}
-	end
+local function loadScores()
+
+    local file = io.open( filePath, "r" )
+
+    if file then
+        local contents = file:read( "*a" )
+        io.close( file )
+        scoresTable = json.decode( contents )
+    end
+
+    if ( scoresTable == nil or #scoresTable == 0 ) then
+        scoresTable = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+    end
 end
 
 local function saveScores()
-	for i = #scoresTable, 11, -1 do
-	    table.remove(scoresTable, i)
-	end
-	local file = io.open( path, "w")
 
-	local temp = json.encode(scoresTable)
+    for i = #scoresTable, 11, -1 do
+        table.remove( scoresTable, i )
+    end
 
-	file:write( temp )
-	io.close(file)
+    local file = io.open( filePath, "w" )
+
+    if file then
+        file:write( json.encode( scoresTable ) )
+        io.close( file )
+    end
 end
 
 local function gotoMenu()
@@ -55,53 +54,47 @@ end
 -- create()
 function scene:create( event )
 
-	local sceneGroup = self.view
-	-- Code here runs when the scene is first created but has not yet appeared on screen
+    local sceneGroup = self.view
+    -- Code here runs when the scene is first created but has not yet appeared on screen
 
-	-- Get the saved score from the last run
-	local latestScore = composer.getVariable( "score" )
+    -- Load the previous scores
+    loadScores()
 
-	-- Load the previous scores
-	loadScores()
+    -- Insert the saved score from the last game into the table, then reset it
+    table.insert( scoresTable, composer.getVariable( "finalScore" ) )
+    composer.setVariable( "finalScore", 0 )
 
-	-- Add our score to the end of the list
-	scoresTable[ #scoresTable + 1] = latestScore
-	
-	-- Now sort the table
-	local function compare( a, b )
-		return a > b
-	end
-	if #scoresTable > 1 then 
-		table.sort(scoresTable, compare)
-	end
+    -- Sort the table entries from highest to lowest
+    local function compare( a, b )
+        return a > b
+    end
+    table.sort( scoresTable, compare )
 
-	-- go ahead and save the scores
-	saveScores()
+    -- Save the scores
+    saveScores()
 
-	local background = display.newImageRect( sceneGroup, "background.png", 800, 1400 )
-	background.x = display.contentCenterX
-	background.y = display.contentCenterY
+    local background = display.newImageRect( sceneGroup, "background.png", 800, 1400 )
+    background.x = display.contentCenterX
+    background.y = display.contentCenterY
 
-	local highScoresText = display.newText(sceneGroup, "High Scores", CENTERX, 100, nil, 34)
-	highScoresText:setFillColor(1,1,1)
-	for i = 1, 10 do
-		local tempY = 150 + (i * 50)
-		print("trying to print ", i, scoresTable[i])
-		if scoresTable[i] then
-			local tempScore = tostring( i ) .. "     ".. tostring( scoresTable[i] )
-			local score = display.newText(sceneGroup, tempScore, CENTERX-50, tempY, nil, 34 )
-			score.anchorX = 0
-			if i == 10 then
-				score.x = CENTERX-70
-			end
-			score:setFillColor( 1, 1, 1 )
-		end
-	end
+    local highScoresHeader = display.newText( sceneGroup, "High Scores", display.contentCenterX, 100, native.systemFont, 44 )
 
-	local menuButton = display.newText( sceneGroup, "Menu", display.contentCenterX, 810, native.systemFont, 44 )
-	menuButton:setFillColor( 0.75, 0.78, 1 )
-	menuButton:addEventListener( "tap", gotoMenu )
+    for i = 1, 10 do
+        if ( scoresTable[i] ) then
+            local yPos = 150 + ( i * 56 )
 
+            local rankNum = display.newText( sceneGroup, i .. ")", display.contentCenterX-50, yPos, native.systemFont, 36 )
+            rankNum:setFillColor( 0.8 )
+            rankNum.anchorX = 1
+
+            local thisScore = display.newText( sceneGroup, scoresTable[i], display.contentCenterX-30, yPos, native.systemFont, 36 )
+            thisScore.anchorX = 0
+        end
+    end
+
+    local menuButton = display.newText( sceneGroup, "Menu", display.contentCenterX, 810, native.systemFont, 44 )
+    menuButton:setFillColor( 0.75, 0.78, 1 )
+    menuButton:addEventListener( "tap", gotoMenu )
 end
 
 
