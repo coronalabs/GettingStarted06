@@ -10,12 +10,12 @@ local scene = composer.newScene()
 
 local function gotoGame()
 	composer.removeScene( "game" )
-    composer.gotoScene( "game", { time=800, effect="crossFade" } )
+	composer.gotoScene( "game", { time=800, effect="crossFade" } )
 end
 
 local function gotoHighScores()
 	composer.removeScene( "highscores" )
-    composer.gotoScene( "highscores", { time=800, effect="crossFade" } )
+	composer.gotoScene( "highscores", { time=800, effect="crossFade" } )
 end
 
 
