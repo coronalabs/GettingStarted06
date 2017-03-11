@@ -8,45 +8,50 @@ local scene = composer.newScene()
 -- the scene is removed entirely (not recycled) via "composer.removeScene()"
 -- -----------------------------------------------------------------------------------
 
--- initialize variables
+-- Initialize variables
 local json = require( "json" )
 
 local scoresTable = {}
 
 local filePath = system.pathForFile( "scores.json", system.DocumentsDirectory )
 
+
 local function loadScores()
 
-    local file = io.open( filePath, "r" )
+	local file = io.open( filePath, "r" )
 
-    if file then
-        local contents = file:read( "*a" )
-        io.close( file )
-        scoresTable = json.decode( contents )
-    end
+	if file then
+		local contents = file:read( "*a" )
+		io.close( file )
+		scoresTable = json.decode( contents )
+	end
 
-    if ( scoresTable == nil or #scoresTable == 0 ) then
-        scoresTable = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
-    end
+	if ( scoresTable == nil or #scoresTable == 0 ) then
+		scoresTable = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+	end
 end
+
 
 local function saveScores()
 
-    for i = #scoresTable, 11, -1 do
-        table.remove( scoresTable, i )
-    end
+	for i = #scoresTable, 11, -1 do
+		table.remove( scoresTable, i )
+	end
 
-    local file = io.open( filePath, "w" )
+	local file = io.open( filePath, "w" )
 
-    if file then
-        file:write( json.encode( scoresTable ) )
-        io.close( file )
-    end
+	if file then
+		file:write( json.encode( scoresTable ) )
+		io.close( file )
+	end
 end
+
 
 local function gotoMenu()
-	composer.gotoScene( "menu", { time = 800, effect = "crossFade" } )
+	composer.gotoScene( "menu", { time=800, effect="crossFade" } )
 end
+
+
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
 -- -----------------------------------------------------------------------------------
@@ -125,7 +130,7 @@ function scene:hide( event )
 
 	elseif ( phase == "did" ) then
 		-- Code here runs immediately after the scene goes entirely off screen
-
+		composer.removeScene( "highscores" )
 	end
 end
 
